@@ -32,14 +32,9 @@ jobs:
     uses: dceoy/gh-actions-for-devops/.github/workflows/docker-lint-and-scan.yml@main   # zizmor: ignore[unpinned-uses]
   docker-build-and-push:
     if: >
-      github.event_name == 'push'
-      || (
-        github.event_name == 'workflow_dispatch'
-        && inputs.workflow == 'build'
-        && (! (failure() || cancelled()))
-      )
-    needs:
-      - docker-lint-and-scan
+      github.event_name == 'workflow_dispatch'
+      && inputs.workflow == 'build'
+      && (! (failure() || cancelled()))
     permissions:
       contents: write
       packages: write
