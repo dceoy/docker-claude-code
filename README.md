@@ -2,6 +2,12 @@
 
 Dockerfile for [Claude Code](https://code.claude.com/docs/en/overview)
 
+## Included tools
+
+- [Claude Code](https://code.claude.com/docs/en/overview) - AI coding assistant
+- [GitHub CLI (`gh`)](https://cli.github.com/) - GitHub operations from the command line
+- `git`, `curl`, `jq`, `openssh-client`
+
 ## Usage
 
 ### Build the image
