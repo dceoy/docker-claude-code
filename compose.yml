@@ -20,8 +20,11 @@ services:
     stdin_open: true
     volumes:
       - .:/workspace
+      - claude-config:/home/claude/.claude
     working_dir: /workspace
     entrypoint:
       - zsh
     command:
       - -l
+volumes:
+  claude-config:
