@@ -1,16 +1,27 @@
+---
 services:
   claude-code:
-    build: .
-    image: claude-code
     container_name: claude-code
+    image: dceoy/claude-code:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: cli
+      args:
+        USER_NAME: claude
+        USER_UID: '1001'
+        USER_GID: '1001'
     environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}
-      - CLAUDE_CODE_USE_BEDROCK=${CLAUDE_CODE_USE_BEDROCK:-}
-      - CLAUDE_CODE_USE_VERTEX=${CLAUDE_CODE_USE_VERTEX:-}
-      - DISABLE_AUTOUPDATER=1
-    volumes:
-      - ${HOST_WORK_DIR:-.}:/work
-    working_dir: /work
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      ANTHROPIC_BASE_URL: https://openrouter.ai/api
+      ANTHROPIC_AUTH_TOKEN: ${OPENROUTER_API_KEY:-}
+      ANTHROPIC_API_KEY: ''   # Important: Must be explicitly empty
     tty: true
     stdin_open: true
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    entrypoint:
+      - zsh
+    command:
+      - -l
