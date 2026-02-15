@@ -36,10 +36,10 @@ HOST_WORK_DIR=/path/to/project ANTHROPIC_API_KEY=sk-ant-... docker compose run -
 
 ## Environment variables
 
-| Variable | Description |
-|---|---|
-| `ANTHROPIC_API_KEY` | Anthropic API key (required) |
-| `ANTHROPIC_MODEL` | Model override (e.g., `claude-sonnet-4-5-20250929`) |
-| `CLAUDE_CODE_USE_BEDROCK` | Enable Amazon Bedrock (`1`) |
-| `CLAUDE_CODE_USE_VERTEX` | Enable Google Vertex AI (`1`) |
-| `HOST_WORK_DIR` | Host directory to mount as `/work` (default: `.`) |
+| Variable                  | Description                                         |
+| ------------------------- | --------------------------------------------------- |
+| `ANTHROPIC_API_KEY`       | Anthropic API key (required)                        |
+| `ANTHROPIC_MODEL`         | Model override (e.g., `claude-sonnet-4-5-20250929`) |
+| `CLAUDE_CODE_USE_BEDROCK` | Enable Amazon Bedrock (`1`)                         |
+| `CLAUDE_CODE_USE_VERTEX`  | Enable Google Vertex AI (`1`)                       |
+| `HOST_WORK_DIR`           | Host directory to mount as `/work` (default: `.`)   |
