@@ -1,0 +1,16 @@
+services:
+  claude-code:
+    build: .
+    image: claude-code
+    container_name: claude-code
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-}
+      - CLAUDE_CODE_USE_BEDROCK=${CLAUDE_CODE_USE_BEDROCK:-}
+      - CLAUDE_CODE_USE_VERTEX=${CLAUDE_CODE_USE_VERTEX:-}
+      - DISABLE_AUTOUPDATER=1
+    volumes:
+      - ${HOST_WORK_DIR:-.}:/work
+    working_dir: /work
+    tty: true
+    stdin_open: true
