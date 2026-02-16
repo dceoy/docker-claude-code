@@ -35,7 +35,7 @@ RUN \
       apt-get -yqq update \
       && apt-get -yqq upgrade \
       && apt-get -yqq install --no-install-recommends --no-install-suggests \
-        gh git jq npm python3-pip unzip vim zsh
+        gh git jq npm python3-pip ripgrep unzip vim wget zsh
 
 # hadolint ignore=DL3013
 RUN \
