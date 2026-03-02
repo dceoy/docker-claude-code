@@ -1,7 +1,7 @@
 ---
 services:
-  litellm:
-    container_name: litellm
+  litellm-proxy:
+    container_name: litellm-proxy
     image: docker.litellm.ai/berriai/litellm:main-stable
     environment:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
@@ -17,14 +17,11 @@ services:
       LITELLM_GEMINI_SONNET_MODEL: ${LITELLM_GEMINI_SONNET_MODEL:-gemini/gemini-3-flash-preview}
       LITELLM_GEMINI_HAIKU_MODEL: ${LITELLM_GEMINI_HAIKU_MODEL:-gemini/gemini-2.5-flash-lite}
     command:
-      - --config
-      - /app/config.yml
-      - --host
-      - 0.0.0.0
-      - --port
-      - '4000'
+      - --config=/app/config.yml
+      - --host=0.0.0.0
+      - --port=4000
     ports:
-      - '4000:4000'
+      - 4000:4000
     volumes:
       - ./litellm.config.yml:/app/config.yml:ro
   claude-code:
@@ -39,9 +36,9 @@ services:
         USER_UID: '1001'
         USER_GID: '1001'
     depends_on:
-      - litellm
+      - litellm-proxy
     environment:
-      ANTHROPIC_BASE_URL: http://litellm:4000
+      ANTHROPIC_BASE_URL: http://litellm-proxy:4000
       ANTHROPIC_AUTH_TOKEN: ${LITELLM_API_KEY:-sk-litellm}
       ANTHROPIC_API_KEY: ''   # Important: Must be explicitly empty
       ANTHROPIC_DEFAULT_OPUS_MODEL: ${ANTHROPIC_DEFAULT_OPUS_MODEL:-gemini-opus}

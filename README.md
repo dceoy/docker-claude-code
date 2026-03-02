@@ -1,8 +1,6 @@
 # docker-claude-code
 
-Docker image and Docker Compose setup for running
-[Claude Code](https://code.claude.com/docs/en/overview) in an isolated Ubuntu
-container.
+Dockerfile and compose.yml for Claude Code with LiteLLM proxy
 
 ## Included tools
 
