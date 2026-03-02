@@ -23,13 +23,13 @@ docker compose build
 mounts this repository at `/workspace`.
 
 ```sh
-GEMINI_API_KEY=AIza... docker compose run --rm claude-code
+GROQ_API_KEY=gsk_... docker compose run --rm claude-code
 ```
 
 ### Run Claude Code with a one-shot prompt
 
 ```sh
-GEMINI_API_KEY=AIza... \
+GROQ_API_KEY=gsk_... \
 docker compose run --rm claude-code \
   -p "explain this project"
 ```
@@ -38,28 +38,35 @@ docker compose run --rm claude-code \
 
 `compose.yml` now routes Claude Code through a local LiteLLM proxy:
 
-`Claude Code -> LiteLLM (Anthropic-compatible endpoint) -> Gemini (primary) -> OpenRouter (fallback)`
+`Claude Code -> LiteLLM (Anthropic-compatible endpoint) -> Groq (primary) -> OpenRouter (fallback)`
 
-| Variable                          | Default value                                      | Purpose                                                   |
-| --------------------------------- | -------------------------------------------------- | --------------------------------------------------------- |
-| `OPENROUTER_API_KEY`              | `${OPENROUTER_API_KEY:-}`                          | OpenRouter API key used by LiteLLM                        |
-| `GEMINI_API_KEY`                  | `${GEMINI_API_KEY:-}`                              | Gemini API key used by LiteLLM                            |
-| `LITELLM_API_KEY`                 | `${LITELLM_API_KEY:-sk-litellm}`                   | Shared auth token between Claude Code and LiteLLM         |
-| `LITELLM_OPENROUTER_OPUS_MODEL`   | `openrouter/openrouter/openrouter/free`            | OpenRouter free route mapped to Claude Code's Opus slot   |
-| `LITELLM_OPENROUTER_SONNET_MODEL` | `openrouter/openrouter/openrouter/free`            | OpenRouter free route mapped to Claude Code's Sonnet slot |
-| `LITELLM_OPENROUTER_HAIKU_MODEL`  | `openrouter/openrouter/openrouter/free`            | OpenRouter free route mapped to Claude Code's Haiku slot  |
-| `LITELLM_GEMINI_OPUS_MODEL`       | `gemini/gemini-3.1-pro-preview`                    | Gemini model mapped to Claude Code's Opus slot            |
-| `LITELLM_GEMINI_SONNET_MODEL`     | `gemini/gemini-3-flash-preview`                    | Gemini model mapped to Claude Code's Sonnet slot          |
-| `LITELLM_GEMINI_HAIKU_MODEL`      | `gemini/gemini-2.5-flash-lite`                     | Gemini model mapped to Claude Code's Haiku slot           |
-| `ANTHROPIC_DEFAULT_OPUS_MODEL`    | `${ANTHROPIC_DEFAULT_OPUS_MODEL:-gemini-opus}`     | Anthropic-facing model alias Claude Code uses for Opus    |
-| `ANTHROPIC_DEFAULT_SONNET_MODEL`  | `${ANTHROPIC_DEFAULT_SONNET_MODEL:-gemini-sonnet}` | Anthropic-facing model alias Claude Code uses for Sonnet  |
-| `ANTHROPIC_DEFAULT_HAIKU_MODEL`   | `${ANTHROPIC_DEFAULT_HAIKU_MODEL:-gemini-haiku}`   | Anthropic-facing model alias Claude Code uses for Haiku   |
-| `ANTHROPIC_API_KEY`               | `''` (explicitly empty)                            | Kept empty to avoid conflicting provider auth             |
+| Variable                          | Default value                                    | Purpose                                                   |
+| --------------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
+| `OPENROUTER_API_KEY`              | `${OPENROUTER_API_KEY:-}`                        | OpenRouter API key used by LiteLLM                        |
+| `GROQ_API_KEY`                    | `${GROQ_API_KEY:-}`                              | Groq API key used by LiteLLM                              |
+| `GEMINI_API_KEY`                  | `${GEMINI_API_KEY:-}`                            | Gemini API key used by LiteLLM                            |
+| `LITELLM_API_KEY`                 | `${LITELLM_API_KEY:-sk-litellm}`                 | Shared auth token between Claude Code and LiteLLM         |
+| `LITELLM_GROQ_OPUS_MODEL`         | `groq/openai/gpt-oss-120b`                       | Groq model mapped to Claude Code's Opus slot              |
+| `LITELLM_GROQ_SONNET_MODEL`       | `groq/moonshotai/kimi-k2-instruct-0905`          | Groq model mapped to Claude Code's Sonnet slot            |
+| `LITELLM_GROQ_HAIKU_MODEL`        | `groq/qwen/qwen3-32b`                            | Groq model mapped to Claude Code's Haiku slot             |
+| `LITELLM_OPENROUTER_OPUS_MODEL`   | `openrouter/openrouter/openrouter/free`          | OpenRouter free route mapped to Claude Code's Opus slot   |
+| `LITELLM_OPENROUTER_SONNET_MODEL` | `openrouter/openrouter/openrouter/free`          | OpenRouter free route mapped to Claude Code's Sonnet slot |
+| `LITELLM_OPENROUTER_HAIKU_MODEL`  | `openrouter/openrouter/openrouter/free`          | OpenRouter free route mapped to Claude Code's Haiku slot  |
+| `LITELLM_GEMINI_OPUS_MODEL`       | `gemini/gemini-3.1-pro-preview`                  | Gemini model mapped to Claude Code's Opus slot            |
+| `LITELLM_GEMINI_SONNET_MODEL`     | `gemini/gemini-3-flash-preview`                  | Gemini model mapped to Claude Code's Sonnet slot          |
+| `LITELLM_GEMINI_HAIKU_MODEL`      | `gemini/gemini-2.5-flash-lite`                   | Gemini model mapped to Claude Code's Haiku slot           |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL`    | `${ANTHROPIC_DEFAULT_OPUS_MODEL:-groq-opus}`     | Anthropic-facing model alias Claude Code uses for Opus    |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL`  | `${ANTHROPIC_DEFAULT_SONNET_MODEL:-groq-sonnet}` | Anthropic-facing model alias Claude Code uses for Sonnet  |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL`   | `${ANTHROPIC_DEFAULT_HAIKU_MODEL:-groq-haiku}`   | Anthropic-facing model alias Claude Code uses for Haiku   |
+| `ANTHROPIC_API_KEY`               | `''` (explicitly empty)                          | Kept empty to avoid conflicting provider auth             |
 
 LiteLLM model alias definitions live in `litellm.config.yml`.
 
-Gemini aliases are prioritized by default, with OpenRouter aliases configured as
-fallbacks in LiteLLM (`gemini-* -> openrouter-*`).
+Groq aliases are prioritized by default, with OpenRouter aliases configured as
+fallbacks in LiteLLM (`groq-* -> openrouter-*`).
+
+Gemini aliases remain available; if selected explicitly, they fall back via
+Groq before OpenRouter (`gemini-* -> groq-* -> openrouter-*`).
 
 > Note: for LiteLLM's Anthropic-compatible endpoint, the free route is currently
 > configured as `openrouter/openrouter/openrouter/free`.
@@ -82,6 +89,9 @@ docker compose run --rm claude-code \
 
 ```sh
 GEMINI_API_KEY=AIza... \
+ANTHROPIC_DEFAULT_OPUS_MODEL=gemini-opus \
+ANTHROPIC_DEFAULT_SONNET_MODEL=gemini-sonnet \
+ANTHROPIC_DEFAULT_HAIKU_MODEL=gemini-haiku \
 docker compose run --rm claude-code \
   -p "explain this project"
 ```
