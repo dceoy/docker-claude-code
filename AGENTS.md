@@ -17,9 +17,9 @@ Keep new files at the repo root unless they are CI/config artifacts (`.github/..
 Use Docker Compose for all local workflows:
 
 - `docker compose build` builds the `claude-code` image from `Dockerfile`.
-- `ANTHROPIC_API_KEY=... docker compose run --rm claude-code` starts an interactive CLI session.
-- `ANTHROPIC_API_KEY=... docker compose run --rm claude-code -p "explain this project"` runs a one-shot prompt.
-- `HOST_WORK_DIR=/path/to/project ANTHROPIC_API_KEY=... docker compose run --rm claude-code` mounts a different workspace.
+- `OPENROUTER_API_KEY=... docker compose run --rm claude-code` starts an interactive CLI session.
+- `OPENROUTER_API_KEY=... docker compose run --rm --entrypoint claude claude-code -p "explain this project"` runs a one-shot prompt.
+- `OPENROUTER_API_KEY=... LITELLM_OPENROUTER_SONNET_MODEL=openrouter/openai/gpt-4.1 docker compose run --rm --entrypoint claude claude-code -p "explain this project"` overrides the routed OpenRouter model.
 
 Before opening a PR, at minimum run a fresh build and one container smoke test.
 
@@ -52,4 +52,4 @@ PRs should include:
 
 ## Security & Configuration Tips
 
-Never commit API keys or tokens. Provide secrets via environment variables at runtime. Keep `ANTHROPIC_API_KEY` and other provider credentials local-only.
+Never commit API keys or tokens. Provide secrets via environment variables at runtime. Keep `OPENROUTER_API_KEY`, `LITELLM_API_KEY`, `ANTHROPIC_API_KEY`, and other provider credentials local-only.
