@@ -12,6 +12,18 @@ model_list:
     litellm_params:
       model: os.environ/LITELLM_GEMINI_HAIKU_MODEL
       api_key: os.environ/GEMINI_API_KEY
+  - model_name: groq-opus
+    litellm_params:
+      model: os.environ/LITELLM_GROQ_OPUS_MODEL
+      api_key: os.environ/GROQ_API_KEY
+  - model_name: groq-sonnet
+    litellm_params:
+      model: os.environ/LITELLM_GROQ_SONNET_MODEL
+      api_key: os.environ/GROQ_API_KEY
+  - model_name: groq-haiku
+    litellm_params:
+      model: os.environ/LITELLM_GROQ_HAIKU_MODEL
+      api_key: os.environ/GROQ_API_KEY
   - model_name: openrouter-opus
     litellm_params:
       model: os.environ/LITELLM_OPENROUTER_OPUS_MODEL
@@ -37,8 +49,17 @@ litellm_settings:
   drop_params: true
   fallbacks:
     - gemini-opus:
+        - groq-opus
         - openrouter-opus
     - gemini-sonnet:
+        - groq-sonnet
         - openrouter-sonnet
     - gemini-haiku:
+        - groq-haiku
+        - openrouter-haiku
+    - groq-opus:
+        - openrouter-opus
+    - groq-sonnet:
+        - openrouter-sonnet
+    - groq-haiku:
         - openrouter-haiku
