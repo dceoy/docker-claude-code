@@ -19,10 +19,10 @@ container.
 docker compose build
 ```
 
-### Start an interactive container shell (default)
+### Start an interactive Claude Code session (default)
 
-`compose.yml` runs `zsh -l` by default and mounts this repository at
-`/workspace`.
+`compose.yml` runs `claude --dangerously-skip-permissions` by default and
+mounts this repository at `/workspace`.
 
 ```sh
 OPENROUTER_API_KEY=sk-or-... docker compose run --rm claude-code
@@ -30,11 +30,9 @@ OPENROUTER_API_KEY=sk-or-... docker compose run --rm claude-code
 
 ### Run Claude Code with a one-shot prompt
 
-Override the compose entrypoint for one-shot usage:
-
 ```sh
 OPENROUTER_API_KEY=sk-or-... \
-docker compose run --rm --entrypoint claude claude-code \
+docker compose run --rm claude-code \
   -p "explain this project"
 ```
 
@@ -68,7 +66,7 @@ OPENROUTER_API_KEY=sk-or-... \
 LITELLM_OPENROUTER_OPUS_MODEL=openrouter/google/gemini-2.5-pro-preview \
 LITELLM_OPENROUTER_SONNET_MODEL=openrouter/openai/gpt-4.1 \
 LITELLM_OPENROUTER_HAIKU_MODEL=openrouter/deepseek/deepseek-chat-v3-0324 \
-docker compose run --rm --entrypoint claude claude-code \
+docker compose run --rm claude-code \
   -p "explain this project"
 ```
 
@@ -83,6 +81,6 @@ docker compose run --rm \
   -e ANTHROPIC_DEFAULT_OPUS_MODEL= \
   -e ANTHROPIC_DEFAULT_SONNET_MODEL= \
   -e ANTHROPIC_DEFAULT_HAIKU_MODEL= \
-  --entrypoint claude claude-code \
+  claude-code \
   -p "explain this project"
 ```

@@ -50,8 +50,8 @@ services:
       - claude-config:/home/claude/.claude
     working_dir: /workspace
     entrypoint:
-      - zsh
+      - claude
     command:
-      - -l
+      - --dangerously-skip-permissions
 volumes:
   claude-config:
