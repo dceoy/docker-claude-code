@@ -1,18 +1,28 @@
 ---
 services:
   litellm:
-    container_name: litellm-proxy
+    container_name: litellm
     image: docker.litellm.ai/berriai/litellm:main-stable
     environment:
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_SITE_URL: ${OPENROUTER_SITE_URL:-https://github.com/dceoy/docker-claude-code}
+      OPENROUTER_APP_NAME: ${OPENROUTER_APP_NAME:-docker-claude-code}
+      LITELLM_MASTER_KEY: ${LITELLM_API_KEY:-sk-litellm}
+      LITELLM_ANTHROPIC_DISABLE_NO_PROVIDER_ERROR: 'true'
+      LITELLM_OPENROUTER_OPUS_MODEL: ${LITELLM_OPENROUTER_OPUS_MODEL:-openrouter/openrouter/openrouter/free}
+      LITELLM_OPENROUTER_SONNET_MODEL: ${LITELLM_OPENROUTER_SONNET_MODEL:-openrouter/openrouter/openrouter/free}
+      LITELLM_OPENROUTER_HAIKU_MODEL: ${LITELLM_OPENROUTER_HAIKU_MODEL:-openrouter/openrouter/openrouter/free}
     command:
+      - --config
+      - /app/config.yml
       - --host
       - 0.0.0.0
       - --port
       - '4000'
     ports:
       - '4000:4000'
-
+    volumes:
+      - ./litellm.config.yml:/app/config.yml:ro
   claude-code:
     container_name: claude-code
     image: dceoy/claude-code:latest
@@ -30,6 +40,9 @@ services:
       ANTHROPIC_BASE_URL: http://litellm:4000
       ANTHROPIC_AUTH_TOKEN: ${LITELLM_API_KEY:-sk-litellm}
       ANTHROPIC_API_KEY: ''   # Important: Must be explicitly empty
+      ANTHROPIC_DEFAULT_OPUS_MODEL: ${ANTHROPIC_DEFAULT_OPUS_MODEL:-openrouter-opus}
+      ANTHROPIC_DEFAULT_SONNET_MODEL: ${ANTHROPIC_DEFAULT_SONNET_MODEL:-openrouter-sonnet}
+      ANTHROPIC_DEFAULT_HAIKU_MODEL: ${ANTHROPIC_DEFAULT_HAIKU_MODEL:-openrouter-haiku}
     tty: true
     stdin_open: true
     volumes:

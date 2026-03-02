@@ -1,0 +1,25 @@
+---
+model_list:
+  - model_name: openrouter-opus
+    litellm_params:
+      model: os.environ/LITELLM_OPENROUTER_OPUS_MODEL
+      api_key: os.environ/OPENROUTER_API_KEY
+      extra_headers:
+        HTTP-Referer: os.environ/OPENROUTER_SITE_URL
+        X-Title: os.environ/OPENROUTER_APP_NAME
+  - model_name: openrouter-sonnet
+    litellm_params:
+      model: os.environ/LITELLM_OPENROUTER_SONNET_MODEL
+      api_key: os.environ/OPENROUTER_API_KEY
+      extra_headers:
+        HTTP-Referer: os.environ/OPENROUTER_SITE_URL
+        X-Title: os.environ/OPENROUTER_APP_NAME
+  - model_name: openrouter-haiku
+    litellm_params:
+      model: os.environ/LITELLM_OPENROUTER_HAIKU_MODEL
+      api_key: os.environ/OPENROUTER_API_KEY
+      extra_headers:
+        HTTP-Referer: os.environ/OPENROUTER_SITE_URL
+        X-Title: os.environ/OPENROUTER_APP_NAME
+litellm_settings:
+  drop_params: true
