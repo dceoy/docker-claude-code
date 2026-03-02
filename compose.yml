@@ -49,9 +49,9 @@ services:
       ANTHROPIC_BASE_URL: http://litellm-proxy:4000
       ANTHROPIC_AUTH_TOKEN: ${LITELLM_API_KEY:-sk-litellm}
       ANTHROPIC_API_KEY: ''   # Important: Must be explicitly empty
-      ANTHROPIC_DEFAULT_OPUS_MODEL: ${ANTHROPIC_DEFAULT_OPUS_MODEL:-cerebras-opus}
-      ANTHROPIC_DEFAULT_SONNET_MODEL: ${ANTHROPIC_DEFAULT_SONNET_MODEL:-cerebras-sonnet}
-      ANTHROPIC_DEFAULT_HAIKU_MODEL: ${ANTHROPIC_DEFAULT_HAIKU_MODEL:-cerebras-haiku}
+      ANTHROPIC_DEFAULT_OPUS_MODEL: ${ANTHROPIC_DEFAULT_OPUS_MODEL:-gemini-opus}
+      ANTHROPIC_DEFAULT_SONNET_MODEL: ${ANTHROPIC_DEFAULT_SONNET_MODEL:-gemini-sonnet}
+      ANTHROPIC_DEFAULT_HAIKU_MODEL: ${ANTHROPIC_DEFAULT_HAIKU_MODEL:-gemini-haiku}
     tty: true
     stdin_open: true
     volumes:
