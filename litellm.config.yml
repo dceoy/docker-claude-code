@@ -1,5 +1,17 @@
 ---
 model_list:
+  - model_name: gemini-opus
+    litellm_params:
+      model: os.environ/LITELLM_GEMINI_OPUS_MODEL
+      api_key: os.environ/GEMINI_API_KEY
+  - model_name: gemini-sonnet
+    litellm_params:
+      model: os.environ/LITELLM_GEMINI_SONNET_MODEL
+      api_key: os.environ/GEMINI_API_KEY
+  - model_name: gemini-haiku
+    litellm_params:
+      model: os.environ/LITELLM_GEMINI_HAIKU_MODEL
+      api_key: os.environ/GEMINI_API_KEY
   - model_name: openrouter-opus
     litellm_params:
       model: os.environ/LITELLM_OPENROUTER_OPUS_MODEL
@@ -23,3 +35,10 @@ model_list:
         X-Title: os.environ/OPENROUTER_APP_NAME
 litellm_settings:
   drop_params: true
+  fallbacks:
+    - gemini-opus:
+        - openrouter-opus
+    - gemini-sonnet:
+        - openrouter-sonnet
+    - gemini-haiku:
+        - openrouter-haiku

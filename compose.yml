@@ -7,11 +7,15 @@ services:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       OPENROUTER_SITE_URL: ${OPENROUTER_SITE_URL:-https://github.com/dceoy/docker-claude-code}
       OPENROUTER_APP_NAME: ${OPENROUTER_APP_NAME:-docker-claude-code}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       LITELLM_MASTER_KEY: ${LITELLM_API_KEY:-sk-litellm}
       LITELLM_ANTHROPIC_DISABLE_NO_PROVIDER_ERROR: 'true'
       LITELLM_OPENROUTER_OPUS_MODEL: ${LITELLM_OPENROUTER_OPUS_MODEL:-openrouter/openrouter/openrouter/free}
       LITELLM_OPENROUTER_SONNET_MODEL: ${LITELLM_OPENROUTER_SONNET_MODEL:-openrouter/openrouter/openrouter/free}
       LITELLM_OPENROUTER_HAIKU_MODEL: ${LITELLM_OPENROUTER_HAIKU_MODEL:-openrouter/openrouter/openrouter/free}
+      LITELLM_GEMINI_OPUS_MODEL: ${LITELLM_GEMINI_OPUS_MODEL:-gemini/gemini-3.1-pro-preview}
+      LITELLM_GEMINI_SONNET_MODEL: ${LITELLM_GEMINI_SONNET_MODEL:-gemini/gemini-3-flash-preview}
+      LITELLM_GEMINI_HAIKU_MODEL: ${LITELLM_GEMINI_HAIKU_MODEL:-gemini/gemini-2.5-flash-lite}
     command:
       - --config
       - /app/config.yml
@@ -40,9 +44,9 @@ services:
       ANTHROPIC_BASE_URL: http://litellm:4000
       ANTHROPIC_AUTH_TOKEN: ${LITELLM_API_KEY:-sk-litellm}
       ANTHROPIC_API_KEY: ''   # Important: Must be explicitly empty
-      ANTHROPIC_DEFAULT_OPUS_MODEL: ${ANTHROPIC_DEFAULT_OPUS_MODEL:-openrouter-opus}
-      ANTHROPIC_DEFAULT_SONNET_MODEL: ${ANTHROPIC_DEFAULT_SONNET_MODEL:-openrouter-sonnet}
-      ANTHROPIC_DEFAULT_HAIKU_MODEL: ${ANTHROPIC_DEFAULT_HAIKU_MODEL:-openrouter-haiku}
+      ANTHROPIC_DEFAULT_OPUS_MODEL: ${ANTHROPIC_DEFAULT_OPUS_MODEL:-gemini-opus}
+      ANTHROPIC_DEFAULT_SONNET_MODEL: ${ANTHROPIC_DEFAULT_SONNET_MODEL:-gemini-sonnet}
+      ANTHROPIC_DEFAULT_HAIKU_MODEL: ${ANTHROPIC_DEFAULT_HAIKU_MODEL:-gemini-haiku}
     tty: true
     stdin_open: true
     volumes:
