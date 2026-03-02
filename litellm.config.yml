@@ -12,6 +12,18 @@ model_list:
     litellm_params:
       model: os.environ/LITELLM_GEMINI_HAIKU_MODEL
       api_key: os.environ/GEMINI_API_KEY
+  - model_name: cerebras-opus
+    litellm_params:
+      model: os.environ/LITELLM_CEREBRAS_OPUS_MODEL
+      api_key: os.environ/CEREBRAS_API_KEY
+  - model_name: cerebras-sonnet
+    litellm_params:
+      model: os.environ/LITELLM_CEREBRAS_SONNET_MODEL
+      api_key: os.environ/CEREBRAS_API_KEY
+  - model_name: cerebras-haiku
+    litellm_params:
+      model: os.environ/LITELLM_CEREBRAS_HAIKU_MODEL
+      api_key: os.environ/CEREBRAS_API_KEY
   - model_name: groq-opus
     litellm_params:
       model: os.environ/LITELLM_GROQ_OPUS_MODEL
@@ -49,12 +61,24 @@ litellm_settings:
   drop_params: true
   fallbacks:
     - gemini-opus:
+        - cerebras-opus
         - groq-opus
         - openrouter-opus
     - gemini-sonnet:
+        - cerebras-sonnet
         - groq-sonnet
         - openrouter-sonnet
     - gemini-haiku:
+        - cerebras-haiku
+        - groq-haiku
+        - openrouter-haiku
+    - cerebras-opus:
+        - groq-opus
+        - openrouter-opus
+    - cerebras-sonnet:
+        - groq-sonnet
+        - openrouter-sonnet
+    - cerebras-haiku:
         - groq-haiku
         - openrouter-haiku
     - groq-opus:
