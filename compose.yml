@@ -1,5 +1,18 @@
 ---
 services:
+  litellm:
+    container_name: litellm-proxy
+    image: docker.litellm.ai/berriai/litellm:main-stable
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    command:
+      - --host
+      - 0.0.0.0
+      - --port
+      - '4000'
+    ports:
+      - '4000:4000'
+
   claude-code:
     container_name: claude-code
     image: dceoy/claude-code:latest
@@ -11,10 +24,11 @@ services:
         USER_NAME: claude
         USER_UID: '1001'
         USER_GID: '1001'
+    depends_on:
+      - litellm
     environment:
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
-      ANTHROPIC_BASE_URL: https://openrouter.ai/api
-      ANTHROPIC_AUTH_TOKEN: ${OPENROUTER_API_KEY:-}
+      ANTHROPIC_BASE_URL: http://litellm:4000
+      ANTHROPIC_AUTH_TOKEN: ${LITELLM_API_KEY:-sk-litellm}
       ANTHROPIC_API_KEY: ''   # Important: Must be explicitly empty
     tty: true
     stdin_open: true
