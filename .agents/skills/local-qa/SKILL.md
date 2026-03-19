@@ -1,7 +1,7 @@
 ---
 name: local-qa
 description: Run local QA including formatting and linting for the repository. Use whenever any file has been updated, and install missing QA tools before rerunning.
-disable-model-invocation: true
+disable-model-invocation: false
 ---
 
 # Local QA (format and lint)
