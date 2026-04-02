@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
 ARG UBUNTU_VERSION=24.04
-FROM public.ecr.aws/docker/library/ubuntu:${UBUNTU_VERSION} AS cli
+FROM public.ecr.aws/docker/library/ubuntu:${UBUNTU_VERSION} AS base
 
-ARG USER_NAME=claude
+ARG USER_NAME=agent
 ARG USER_UID=1001
 ARG USER_GID=1001
 
@@ -35,7 +35,7 @@ RUN \
       apt-get -yqq update \
       && apt-get -yqq upgrade \
       && apt-get -yqq install --no-install-recommends --no-install-suggests \
-        gh git jq npm python3-pip ripgrep unzip vim wget zsh
+        gh git jq npm python3-pip ripgrep tree unzip vim wget zsh
 
 # hadolint ignore=DL3013
 RUN \
@@ -48,9 +48,12 @@ RUN \
       && chmod +x /usr/local/bin/print-github-tags
 
 RUN \
-      curl -fsSL -o /usr/local/bin/oh-my-zsh \
-        https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh \
-      && chmod +x /usr/local/bin/oh-my-zsh
+      curl -fsSL -o /usr/local/bin/install.ohmyz.sh https://install.ohmyz.sh \
+      && chmod +x /usr/local/bin/install.ohmyz.sh
+
+RUN \
+      curl -fsSL -o /usr/local/bin/claude.ai.install.sh https://claude.ai/install.sh \
+      && chmod +x /usr/local/bin/claude.ai.install.sh
 
 RUN \
       groupadd --gid "${USER_GID}" "${USER_NAME}" \
@@ -58,16 +61,19 @@ RUN \
 
 HEALTHCHECK NONE
 
+
+FROM base AS cli
+
 USER "${USER_NAME}"
 
 ENV PATH="/home/${USER_NAME}/.local/bin:${PATH}"
 
 RUN \
       --mount=type=cache,target=/home/${USER_NAME}/.npm \
-      curl -fsSL https://claude.ai/install.sh | bash
+      /usr/local/bin/claude.ai.install.sh stable
 
 RUN \
-      /usr/local/bin/oh-my-zsh --unattended
+      /usr/local/bin/install.ohmyz.sh --unattended
 
 RUN \
       echo '.DS_Store' > "${HOME}/.gitignore" \
@@ -82,7 +88,5 @@ RUN \
       && git config --global user.name "${USER_NAME}" \
       && git config --global user.email "${USER_NAME}@localhost"
 
-RUN \
-      echo "alias claude='claude --dangerously-skip-permissions'" >> "${HOME}/.zprofile"
-
 ENTRYPOINT ["claude"]
+CMD ["--dangerously-skip-permissions"]
