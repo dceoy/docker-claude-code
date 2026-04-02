@@ -40,7 +40,7 @@ services:
       dockerfile: Dockerfile
       target: cli
       args:
-        USER_NAME: claude
+        USER_NAME: agent
         USER_UID: '1001'
         USER_GID: '1001'
     depends_on:
@@ -52,24 +52,26 @@ services:
       ANTHROPIC_DEFAULT_OPUS_MODEL: ${ANTHROPIC_DEFAULT_OPUS_MODEL:-gemini-opus}
       ANTHROPIC_DEFAULT_SONNET_MODEL: ${ANTHROPIC_DEFAULT_SONNET_MODEL:-gemini-sonnet}
       ANTHROPIC_DEFAULT_HAIKU_MODEL: ${ANTHROPIC_DEFAULT_HAIKU_MODEL:-gemini-haiku}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     tty: true
     stdin_open: true
     volumes:
       - .:/workspace
-      - claude-config:/home/claude/.claude
-      - config-data:/home/claude/.config
+      - claude-config:/home/agent/.claude
+      - config-data:/home/agent/.config
     working_dir: /workspace
     post_start:
-      - command: bash -c '[[ "$(stat -c "%U:%G" /home/claude/.claude)" != "root:root" ]] || chown claude:claude /home/claude/.claude'
+      - command: bash -c '[[ "$(stat -c "%U:%G" /home/agent/.claude)" != "root:root" ]] || chown agent:agent /home/agent/.claude'
         user: root
-      - command: bash -c '[[ "$(stat -c "%U:%G" /home/claude/.config)" != "root:root" ]] || chown claude:claude /home/claude/.config'
+      - command: bash -c '[[ "$(stat -c "%U:%G" /home/agent/.config)" != "root:root" ]] || chown agent:agent /home/agent/.config'
         user: root
       - command: git config --global --add safe.directory /workspace
-        user: claude
+        user: agent
     entrypoint:
-      - claude
+      - /usr/bin/zsh
     command:
-      - --dangerously-skip-permissions
+      - -lc
+      - 'claude --dangerously-skip-permissions'
 volumes:
   claude-config:
   config-data:

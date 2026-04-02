@@ -2,7 +2,7 @@
 ARG UBUNTU_VERSION=24.04
 FROM public.ecr.aws/docker/library/ubuntu:${UBUNTU_VERSION} AS base
 
-ARG USER_NAME=claude
+ARG USER_NAME=agent
 ARG USER_UID=1001
 ARG USER_GID=1001
 
@@ -52,6 +52,10 @@ RUN \
       && chmod +x /usr/local/bin/install.ohmyz.sh
 
 RUN \
+      curl -fsSL -o /usr/local/bin/claude.ai.install.sh https://claude.ai/install.sh \
+      && chmod +x /usr/local/bin/claude.ai.install.sh
+
+RUN \
       groupadd --gid "${USER_GID}" "${USER_NAME}" \
       && useradd --uid "${USER_UID}" --gid "${USER_GID}" --shell /bin/bash --create-home "${USER_NAME}"
 
@@ -66,7 +70,7 @@ ENV PATH="/home/${USER_NAME}/.local/bin:${PATH}"
 
 RUN \
       --mount=type=cache,target=/home/${USER_NAME}/.npm \
-      curl -fsSL https://claude.ai/install.sh | bash
+      /usr/local/bin/claude.ai.install.sh stable
 
 RUN \
       /usr/local/bin/install.ohmyz.sh --unattended
