@@ -57,10 +57,20 @@ services:
     volumes:
       - .:/workspace
       - claude-config:/home/claude/.claude
+      - config-data:/home/claude/.config
     working_dir: /workspace
+    post_start:
+      - command: bash -c '[[ "$(stat -c "%U:%G" /home/claude/.claude)" != "root:root" ]] || chown claude:claude /home/claude/.claude'
+        user: root
+      - command: bash -c '[[ "$(stat -c "%U:%G" /home/claude/.config)" != "root:root" ]] || chown claude:claude /home/claude/.config'
+        user: root
+      - command: git config --global --add safe.directory /workspace
+        user: claude
     entrypoint:
-      - claude
+      - /usr/bin/zsh
     command:
-      - --dangerously-skip-permissions
+      - -lc
+      - 'claude --dangerously-skip-permissions'
 volumes:
   claude-config:
+  config-data:
