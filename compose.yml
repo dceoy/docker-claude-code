@@ -67,10 +67,9 @@ services:
       - command: git config --global --add safe.directory /workspace
         user: claude
     entrypoint:
-      - /usr/bin/zsh
+      - claude
     command:
-      - -lc
-      - 'claude --dangerously-skip-permissions'
+      - --dangerously-skip-permissions
 volumes:
   claude-config:
   config-data:
