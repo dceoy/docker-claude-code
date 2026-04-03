@@ -56,6 +56,10 @@ RUN \
       && chmod +x /usr/local/bin/claude.ai.install.sh
 
 RUN \
+      mkdir -p /opt/claude \
+      && chown "${USER_UID}:${USER_GID}" /opt/claude
+
+RUN \
       groupadd --gid "${USER_GID}" "${USER_NAME}" \
       && useradd --uid "${USER_UID}" --gid "${USER_GID}" --shell /usr/bin/zsh --create-home "${USER_NAME}"
 
@@ -69,6 +73,8 @@ ARG CLAUDE_CODE_VERSION='latest'
 
 USER "${USER_NAME}"
 
+ENV PATH="/home/${USER_NAME}/.local/bin:${PATH}"
+
 RUN \
       --mount=type=cache,target=/home/${USER_NAME}/.npm \
       /usr/local/bin/claude.ai.install.sh "${CLAUDE_CODE_VERSION}"
@@ -78,7 +84,6 @@ RUN \
       /usr/local/bin/install.ohmyz.sh --unattended \
       && sed -ie "s/^ZSH_THEME=.*/ZSH_THEME='${ZSH_THEME}'/g" ~/.zshrc \
       && rm -f ~/.zshrce \
-      && echo 'export PATH="${HOME}/.local/bin:${PATH}"' >> ~/.zprofile \
       && { \
         echo 'alias l="ls"'; \
         echo 'alias g="git"'; \
@@ -99,7 +104,7 @@ RUN \
       && git config --global user.email "${USER_NAME}@localhost"
 
 RUN \
-      . ~/.zprofile \
+      export CLAUDE_CONFIG_DIR='/opt/claude' \
       && claude plugin marketplace add --scope=user anthropics/claude-plugins-official \
       && claude plugin install --scope=user code-review@claude-plugins-official \
       && claude plugin install --scope=user code-simplifier@claude-plugins-official \
@@ -109,7 +114,7 @@ RUN \
       && claude plugin marketplace add --scope=user anthropics/skills
 
 ENTRYPOINT ["claude"]
-CMD ["--dangerously-skip-permissions"]
+CMD ["--dangerously-skip-permissions", "--plugin-dir=/opt/claude/plugins"]
 
 
 FROM cli AS claude
@@ -131,6 +136,6 @@ RUN \
 USER "${USER_NAME}"
 
 RUN \
-      . ~/.zprofile \
+      export CLAUDE_CONFIG_DIR='/opt/claude' \
       && claude plugin marketplace add --scope=user openai/codex-plugin-cc \
       && claude plugin install --scope=user codex@openai-codex

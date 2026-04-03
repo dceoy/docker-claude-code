@@ -39,7 +39,7 @@ services:
       - /usr/bin/zsh
     command:
       - -lc
-      - 'claude --dangerously-skip-permissions'
+      - 'claude --dangerously-skip-permissions --plugin-dir=/opt/claude/plugins'
 volumes:
   claude-data:
   codex-data:
