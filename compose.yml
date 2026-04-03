@@ -43,6 +43,7 @@ services:
         USER_NAME: agent
         USER_UID: '1001'
         USER_GID: '1001'
+        ZSH_THEME: nicoulaj
     depends_on:
       - litellm-proxy
     environment:

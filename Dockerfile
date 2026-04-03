@@ -72,8 +72,17 @@ RUN \
       --mount=type=cache,target=/home/${USER_NAME}/.npm \
       /usr/local/bin/claude.ai.install.sh stable
 
+# hadolint ignore=SC2016
 RUN \
-      /usr/local/bin/install.ohmyz.sh --unattended
+      /usr/local/bin/install.ohmyz.sh --unattended \
+      && sed -ie "s/^ZSH_THEME=.*/ZSH_THEME='${ZSH_THEME}'/g" ~/.zshrc \
+      && rm -f ~/.zshrce \
+      && echo 'export PATH="${HOME}/.local/bin:${PATH}"' >> ~/.zprofile \
+      && { \
+        echo 'alias l="ls"'; \
+        echo 'alias g="git"'; \
+        echo 'alias v="vim"'; \
+      } >> ~/.zprofile
 
 RUN \
       echo '.DS_Store' > "${HOME}/.gitignore" \
