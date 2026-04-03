@@ -8,7 +8,7 @@ LiteLLM runtimes
 - [Claude Code](https://code.claude.com/docs/en/overview) CLI
 - OpenAI Codex CLI and the [`codex-plugin-cc`](https://github.com/openai/codex-plugin-cc) Claude plugin (auto-installed in `compose.claude-with-codex.yml`)
 - [GitHub CLI (`gh`)](https://cli.github.com/)
-- `git`, `jq`, `npm`, `pipx`, `python3-pip`, `ripgrep`, `unzip`, `uv`,
+- `git`, `jq`, `npm`, `pipx`, `python3-pip`, `ripgrep`, `rsync`, `unzip`, `uv`,
   `vim`, `wget`, `zsh`
 - Helper scripts: `print-github-tags`, `oh-my-zsh`
 
@@ -36,7 +36,7 @@ commands keep using the default Claude Code runtime.
 `compose.yml` points to `compose.claude.yml`, which runs
 `claude --dangerously-skip-permissions` directly, without LiteLLM, and mounts
 this repository at `/workspace`. You can sign in interactively and keep the
-session in the `claude-data` volume.
+session in the `home-data` volume mounted at `/home/agent`.
 
 ```sh
 docker compose run --rm claude-code
@@ -47,8 +47,7 @@ docker compose run --rm claude-code
 `compose.claude-with-codex.yml` builds the `claude-with-codex` image target, so
 the container includes `claude`, `codex`, and a user-scoped installation of
 [`codex-plugin-cc`](https://github.com/openai/codex-plugin-cc) baked into the
-image while keeping Claude state in `claude-data`, Codex state in
-`codex-data`, and general app config in `config-data`.
+image while keeping the entire `/home/agent` tree in the `home-data` volume.
 
 ```sh
 docker compose -f compose.claude-with-codex.yml run --rm claude-code
@@ -61,15 +60,15 @@ claude plugin marketplace add --scope=user openai/codex-plugin-cc
 claude plugin install --scope=user codex@openai-codex
 ```
 
-On first container start, Docker seeds the empty `claude-data` named volume
-from the image contents, so the installed plugin persists with the rest of the
-Claude state. Then run `/codex:setup` inside Claude Code. If you prefer
-API-key auth over `codex login`, the Codex runtime also passes through
-`OPENAI_API_KEY`.
+On first container start, the post-start hook copies the prebuilt home
+directory from `/opt/claude/` into an empty `home-data` volume, so the
+installed plugin persists with the rest of the Claude and Codex state. Then
+run `/codex:setup` inside Claude Code. If you prefer API-key auth over
+`codex login`, the Codex runtime also passes through `OPENAI_API_KEY`.
 
-If your existing `claude-data` volume was created before this image included
-the plugin, recreate that volume once so Docker can seed it from the rebuilt
-image.
+If you are upgrading from the old split-volume layout (`claude-data`,
+`codex-data`, `config-data`), create a fresh `home-data` volume or migrate the
+contents you want to keep into `/home/agent` before starting the new runtime.
 
 ### Run Claude Code with a one-shot prompt
 
@@ -85,8 +84,7 @@ docker compose run --rm claude-code \
 
 - Runs only the `claude-code` container.
 - Passes through `ANTHROPIC_API_KEY` for direct API-key authentication.
-- Persists Claude Code state in `claude-data` and general app config in
-  `config-data`.
+- Persists the full `/home/agent` directory in `home-data`.
 
 ### Codex-enabled runtime (`compose.claude-with-codex.yml`)
 
@@ -95,8 +93,7 @@ docker compose run --rm claude-code \
 - Adds the OpenAI marketplace with `claude plugin marketplace add --scope=user openai/codex-plugin-cc` and installs `codex@openai-codex` during image build.
 - Passes through `ANTHROPIC_API_KEY` for Claude Code and `GITHUB_TOKEN` for
   GitHub-backed workflows, plus `OPENAI_API_KEY` for Codex API-key auth.
-- Persists Claude Code state in `claude-data`, Codex state in `codex-data`,
-  and general app config in `config-data`.
+- Persists the full `/home/agent` directory in `home-data`.
 
 ### LiteLLM runtime (`compose.claude-and-litellm.yml`)
 
@@ -107,8 +104,8 @@ proxy:
 
 The LiteLLM proxy API is exposed on the host as `localhost:4000`.
 
-Claude Code state is persisted in `claude-data`, and general app config is
-persisted in `config-data`.
+Claude Code state and general app config are persisted together in
+`home-data`.
 
 | Variable                                      | Default value                                                         | Purpose                                                    |
 | --------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |

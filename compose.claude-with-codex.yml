@@ -22,16 +22,10 @@ services:
     stdin_open: true
     volumes:
       - .:/workspace
-      - claude-data:/home/agent/.claude
-      - codex-data:/home/agent/.codex
-      - config-data:/home/agent/.config
+      - home-data:/home/agent
     working_dir: /workspace
     post_start:
-      - command: bash -c '[[ "$(stat -c "%U:%G" /home/agent/.claude)" != "root:root" ]] || chown agent:agent /home/agent/.claude'
-        user: root
-      - command: bash -c '[[ "$(stat -c "%U:%G" /home/agent/.codex)" != "root:root" ]] || chown agent:agent /home/agent/.codex'
-        user: root
-      - command: bash -c '[[ "$(stat -c "%U:%G" /home/agent/.config)" != "root:root" ]] || chown agent:agent /home/agent/.config'
+      - command: bash -c '[[ -d /home/agent/.claude ]] || rsync -au /opt/claude/ /home/agent/'
         user: root
       - command: git config --global --add safe.directory /workspace
         user: agent
@@ -39,8 +33,6 @@ services:
       - /usr/bin/zsh
     command:
       - -lc
-      - 'claude --dangerously-skip-permissions --plugin-dir=/opt/claude/plugins'
+      - 'claude --dangerously-skip-permissions'
 volumes:
-  claude-data:
-  codex-data:
-  config-data:
+  home-data:

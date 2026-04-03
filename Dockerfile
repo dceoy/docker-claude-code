@@ -35,7 +35,7 @@ RUN \
       apt-get -yqq update \
       && apt-get -yqq upgrade \
       && apt-get -yqq install --no-install-recommends --no-install-suggests \
-        gh git jq npm python3-pip ripgrep tree unzip vim wget zsh
+        gh git jq npm python3-pip ripgrep rsync tree unzip vim wget zsh
 
 # hadolint ignore=DL3013
 RUN \
@@ -104,7 +104,10 @@ RUN \
       && git config --global user.email "${USER_NAME}@localhost"
 
 RUN \
-      export CLAUDE_CONFIG_DIR='/opt/claude' \
+      rsync -a "${HOME}/" /opt/claude/
+
+RUN \
+      export CLAUDE_CONFIG_DIR='/opt/claude/.claude' \
       && claude plugin marketplace add --scope=user anthropics/claude-plugins-official \
       && claude plugin install --scope=user code-review@claude-plugins-official \
       && claude plugin install --scope=user code-simplifier@claude-plugins-official \
@@ -114,7 +117,7 @@ RUN \
       && claude plugin marketplace add --scope=user anthropics/skills
 
 ENTRYPOINT ["claude"]
-CMD ["--dangerously-skip-permissions", "--plugin-dir=/opt/claude/plugins"]
+CMD ["--dangerously-skip-permissions"]
 
 
 FROM cli AS claude
@@ -136,6 +139,6 @@ RUN \
 USER "${USER_NAME}"
 
 RUN \
-      export CLAUDE_CONFIG_DIR='/opt/claude' \
+      export CLAUDE_CONFIG_DIR='/opt/claude/.claude' \
       && claude plugin marketplace add --scope=user openai/codex-plugin-cc \
       && claude plugin install --scope=user codex@openai-codex

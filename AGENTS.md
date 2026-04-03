@@ -25,7 +25,7 @@ Use Docker Compose for all local workflows:
 - `docker compose build` builds the `claude-code` image from `Dockerfile`.
 - `docker compose run --rm claude-code` starts an interactive Claude Code session with the default direct runtime.
 - `docker compose -f compose.claude-with-codex.yml build` builds the Codex-enabled runtime from the `claude-with-codex` Dockerfile target.
-- `docker compose -f compose.claude-with-codex.yml run --rm claude-code` starts an interactive Claude Code session with the `codex` CLI and the preinstalled Codex plugin available from the seeded `claude-data` volume.
+- `docker compose -f compose.claude-with-codex.yml run --rm claude-code` starts an interactive Claude Code session with the `codex` CLI and the preinstalled Codex plugin available from the seeded `home-data` volume mounted at `/home/agent`.
 - `ANTHROPIC_API_KEY=... docker compose run --rm claude-code -p "explain this project"` runs a one-shot prompt without LiteLLM.
 - `GEMINI_API_KEY=... docker compose -f compose.claude-and-litellm.yml run --rm claude-code -p "explain this project"` runs Claude Code through LiteLLM with Gemini-backed model aliases.
 - `OPENROUTER_API_KEY=... ANTHROPIC_DEFAULT_SONNET_MODEL=openrouter-sonnet LITELLM_OPENROUTER_SONNET_MODEL=openrouter/openai/gpt-4.1 docker compose -f compose.claude-and-litellm.yml run --rm claude-code -p "explain this project"` routes the Sonnet slot through an OpenRouter override.
