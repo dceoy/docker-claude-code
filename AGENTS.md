@@ -5,7 +5,8 @@
 This repository is intentionally small and Docker-centric.
 
 - `Dockerfile`: Builds the `claude` CLI image on Ubuntu.
-- `compose.yml`: Default Claude Code runtime without LiteLLM.
+- `compose.claude.yml`: Default Claude Code runtime without LiteLLM.
+- `compose.yml`: Symlink to `compose.claude.yml` so plain `docker compose` uses the default runtime.
 - `compose.claude-with-litellm.yml`: Claude Code runtime with the LiteLLM sidecar.
 - `litellm.config.yml`: LiteLLM model aliases and fallback chains for `compose.claude-with-litellm.yml`.
 - `README.md`: Primary usage documentation.
@@ -34,13 +35,14 @@ Before opening a PR, at minimum run a fresh build and one container smoke test.
 - YAML uses 2-space indentation and lowercase keys.
 - Dockerfile instructions are uppercase (`FROM`, `RUN`, `ENV`) with grouped, multi-line `RUN` blocks.
 - Prefer explicit shell safety (`bash -euo pipefail`) and deterministic install steps.
-- Keep filenames lowercase (`compose.yml`, `compose.claude-with-litellm.yml`, `ci.yml`) and use descriptive, tool-oriented names.
+- Keep filenames lowercase (`compose.claude.yml`, `compose.yml`, `compose.claude-with-litellm.yml`, `ci.yml`) and use descriptive, tool-oriented names.
 
 ## Testing Guidelines
 
 There is no unit-test framework in this repo. Validation is operational:
 
 - Local: run `docker compose build`, at least one `docker compose run --rm claude-code ...` smoke test, and `.agents/skills/local-qa/scripts/qa.sh`.
+- When changing `compose.claude.yml`, validate through the `compose.yml` symlink with `docker compose ...`.
 - When changing `compose.claude-with-litellm.yml` or `litellm.config.yml`, also run a smoke test with `docker compose -f compose.claude-with-litellm.yml run --rm claude-code ...`.
 - CI:
   - `docker-lint-and-scan` runs on pushes and pull requests to `main` (and via `workflow_dispatch` when `workflow=lint-and-scan`).

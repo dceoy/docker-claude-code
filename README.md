@@ -24,11 +24,15 @@ To use the LiteLLM-enabled runtime instead, target the alternate Compose file:
 docker compose -f compose.claude-with-litellm.yml build
 ```
 
+`compose.yml` is a symlink to `compose.claude.yml`, so plain `docker compose`
+commands keep using the default Claude Code runtime.
+
 ### Start an interactive Claude Code session (default)
 
-`compose.yml` runs `claude --dangerously-skip-permissions` directly, without
-LiteLLM, and mounts this repository at `/workspace`. You can sign in
-interactively and keep the session in the `claude-config` volume.
+`compose.yml` points to `compose.claude.yml`, which runs
+`claude --dangerously-skip-permissions` directly, without LiteLLM, and mounts
+this repository at `/workspace`. You can sign in interactively and keep the
+session in the `claude-config` volume.
 
 ```sh
 docker compose run --rm claude-code
@@ -44,7 +48,7 @@ docker compose run --rm claude-code \
 
 ## Runtime environments
 
-### Default runtime (`compose.yml`)
+### Default runtime (`compose.claude.yml`, via `compose.yml`)
 
 - Runs only the `claude-code` container.
 - Passes through `ANTHROPIC_API_KEY` for direct API-key authentication.
@@ -121,7 +125,8 @@ docker compose -f compose.claude-with-litellm.yml run --rm claude-code \
   -p "explain this project"
 ```
 
-To use Anthropic directly instead of LiteLLM, use the default `compose.yml`.
+To use Anthropic directly instead of LiteLLM, use the default `compose.yml`
+symlink, which points to `compose.claude.yml`.
 
 ```sh
 ANTHROPIC_API_KEY=sk-ant-... \
