@@ -38,12 +38,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: cli
+      target: claude
       args:
         USER_NAME: agent
         USER_UID: '1001'
         USER_GID: '1001'
         ZSH_THEME: nicoulaj
+        CLAUDE_CODE_VERSION: latest
     depends_on:
       - litellm-proxy
     environment:
@@ -58,7 +59,7 @@ services:
     stdin_open: true
     volumes:
       - .:/workspace
-      - claude-config:/home/agent/.claude
+      - claude-data:/home/agent/.claude
       - config-data:/home/agent/.config
     working_dir: /workspace
     post_start:
@@ -74,5 +75,5 @@ services:
       - -lc
       - 'claude --dangerously-skip-permissions'
 volumes:
-  claude-config:
+  claude-data:
   config-data:

@@ -65,6 +65,7 @@ HEALTHCHECK NONE
 FROM base AS cli
 
 ARG ZSH_THEME='robbyrussell'
+ARG CLAUDE_CODE_VERSION='latest'
 
 USER "${USER_NAME}"
 
@@ -72,7 +73,7 @@ ENV PATH="/home/${USER_NAME}/.local/bin:${PATH}"
 
 RUN \
       --mount=type=cache,target=/home/${USER_NAME}/.npm \
-      /usr/local/bin/claude.ai.install.sh stable
+      /usr/local/bin/claude.ai.install.sh "${CLAUDE_CODE_VERSION}"
 
 # hadolint ignore=SC2016
 RUN \
@@ -101,3 +102,26 @@ RUN \
 
 ENTRYPOINT ["claude"]
 CMD ["--dangerously-skip-permissions"]
+
+
+FROM cli AS claude
+
+
+FROM cli AS claude-with-codex
+
+ARG CODEX_CLI_VERSION='latest'
+
+USER root
+
+# hadolint ignore=DL3016
+RUN \
+      --mount=type=cache,target=/root/.npm \
+      npm config set prefix /usr/local \
+      && npm upgrade -g \
+      && npm install -g "@openai/codex@${CODEX_CLI_VERSION}"
+
+USER "${USER_NAME}"
+
+RUN \
+      claude plugin marketplace add --scope=user openai/codex-plugin-cc \
+      && claude plugin install --scope=user codex@openai-codex

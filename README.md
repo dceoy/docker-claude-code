@@ -1,10 +1,12 @@
 # docker-claude-code
 
-Dockerfile and Compose files for Claude Code, with an optional LiteLLM proxy
+Dockerfile and Compose files for Claude Code, with optional Codex CLI and
+LiteLLM runtimes
 
 ## Included tools
 
 - [Claude Code](https://code.claude.com/docs/en/overview) CLI
+- OpenAI Codex CLI and the [`codex-plugin-cc`](https://github.com/openai/codex-plugin-cc) Claude plugin (auto-installed in `compose.claude-with-codex.yml`)
 - [GitHub CLI (`gh`)](https://cli.github.com/)
 - `git`, `jq`, `npm`, `pipx`, `python3-pip`, `ripgrep`, `unzip`, `uv`,
   `vim`, `wget`, `zsh`
@@ -18,9 +20,11 @@ Dockerfile and Compose files for Claude Code, with an optional LiteLLM proxy
 docker compose build
 ```
 
-To use the LiteLLM-enabled runtime instead, target the alternate Compose file:
+To use the Codex-enabled or LiteLLM-enabled runtime instead, target the
+alternate Compose file:
 
 ```sh
+docker compose -f compose.claude-with-codex.yml build
 docker compose -f compose.claude-with-litellm.yml build
 ```
 
@@ -32,11 +36,40 @@ commands keep using the default Claude Code runtime.
 `compose.yml` points to `compose.claude.yml`, which runs
 `claude --dangerously-skip-permissions` directly, without LiteLLM, and mounts
 this repository at `/workspace`. You can sign in interactively and keep the
-session in the `claude-config` volume.
+session in the `claude-data` volume.
 
 ```sh
 docker compose run --rm claude-code
 ```
+
+### Start an interactive Claude Code session with Codex installed
+
+`compose.claude-with-codex.yml` builds the `claude-with-codex` image target, so
+the container includes `claude`, `codex`, and a user-scoped installation of
+[`codex-plugin-cc`](https://github.com/openai/codex-plugin-cc) baked into the
+image while keeping Claude state in `claude-data`, Codex state in
+`codex-data`, and general app config in `config-data`.
+
+```sh
+docker compose -f compose.claude-with-codex.yml run --rm claude-code
+```
+
+The image installs the plugin during build with:
+
+```sh
+claude plugin marketplace add --scope=user openai/codex-plugin-cc
+claude plugin install --scope=user codex@openai-codex
+```
+
+On first container start, Docker seeds the empty `claude-data` named volume
+from the image contents, so the installed plugin persists with the rest of the
+Claude state. Then run `/codex:setup` inside Claude Code. If you prefer
+API-key auth over `codex login`, the Codex runtime also passes through
+`OPENAI_API_KEY`.
+
+If your existing `claude-data` volume was created before this image included
+the plugin, recreate that volume once so Docker can seed it from the rebuilt
+image.
 
 ### Run Claude Code with a one-shot prompt
 
@@ -52,8 +85,18 @@ docker compose run --rm claude-code \
 
 - Runs only the `claude-code` container.
 - Passes through `ANTHROPIC_API_KEY` for direct API-key authentication.
-- Persists Claude Code state in `claude-config` and general app config in
+- Persists Claude Code state in `claude-data` and general app config in
   `config-data`.
+
+### Codex-enabled runtime (`compose.claude-with-codex.yml`)
+
+- Builds the `claude-with-codex` Dockerfile target so `codex` is installed
+  alongside `claude`.
+- Adds the OpenAI marketplace with `claude plugin marketplace add --scope=user openai/codex-plugin-cc` and installs `codex@openai-codex` during image build.
+- Passes through `ANTHROPIC_API_KEY` for Claude Code and `GITHUB_TOKEN` for
+  GitHub-backed workflows, plus `OPENAI_API_KEY` for Codex API-key auth.
+- Persists Claude Code state in `claude-data`, Codex state in `codex-data`,
+  and general app config in `config-data`.
 
 ### LiteLLM runtime (`compose.claude-with-litellm.yml`)
 
@@ -63,6 +106,9 @@ proxy:
 `Claude Code -> LiteLLM (Anthropic-compatible endpoint) -> Gemini (primary) -> Cerebras (fallback) -> Groq (fallback) -> OpenRouter (fallback)`
 
 The LiteLLM proxy API is exposed on the host as `localhost:4000`.
+
+Claude Code state is persisted in `claude-data`, and general app config is
+persisted in `config-data`.
 
 | Variable                                      | Default value                                                         | Purpose                                                    |
 | --------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -99,6 +145,19 @@ then Groq, then OpenRouter
 
 > Note: for LiteLLM's Anthropic-compatible endpoint, the free route is currently
 > configured as `openrouter/openrouter/openrouter/free`.
+
+### Pin CLI versions at build time
+
+All runtimes accept `CLAUDE_CODE_VERSION`, and the Codex-enabled runtime also
+accepts `CODEX_CLI_VERSION`.
+
+```sh
+docker compose build --build-arg CLAUDE_CODE_VERSION=latest
+
+docker compose -f compose.claude-with-codex.yml build \
+  --build-arg CLAUDE_CODE_VERSION=latest \
+  --build-arg CODEX_CLI_VERSION=latest
+```
 
 ### Example: pick non-Claude OpenRouter models
 

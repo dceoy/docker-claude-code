@@ -6,25 +6,30 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: claude
+      target: claude-with-codex
       args:
         USER_NAME: agent
         USER_UID: '1001'
         USER_GID: '1001'
         ZSH_THEME: nicoulaj
         CLAUDE_CODE_VERSION: latest
+        CODEX_CLI_VERSION: latest
     environment:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     tty: true
     stdin_open: true
     volumes:
       - .:/workspace
       - claude-data:/home/agent/.claude
+      - codex-data:/home/agent/.codex
       - config-data:/home/agent/.config
     working_dir: /workspace
     post_start:
       - command: bash -c '[[ "$(stat -c "%U:%G" /home/agent/.claude)" != "root:root" ]] || chown agent:agent /home/agent/.claude'
+        user: root
+      - command: bash -c '[[ "$(stat -c "%U:%G" /home/agent/.codex)" != "root:root" ]] || chown agent:agent /home/agent/.codex'
         user: root
       - command: bash -c '[[ "$(stat -c "%U:%G" /home/agent/.config)" != "root:root" ]] || chown agent:agent /home/agent/.config'
         user: root
@@ -37,4 +42,5 @@ services:
       - 'claude --dangerously-skip-permissions'
 volumes:
   claude-data:
+  codex-data:
   config-data:
