@@ -69,8 +69,6 @@ ARG CLAUDE_CODE_VERSION='latest'
 
 USER "${USER_NAME}"
 
-ENV PATH="/home/${USER_NAME}/.local/bin:${PATH}"
-
 RUN \
       --mount=type=cache,target=/home/${USER_NAME}/.npm \
       /usr/local/bin/claude.ai.install.sh "${CLAUDE_CODE_VERSION}"
@@ -100,6 +98,16 @@ RUN \
       && git config --global user.name "${USER_NAME}" \
       && git config --global user.email "${USER_NAME}@localhost"
 
+RUN \
+      . ~/.zprofile \
+      && claude plugin marketplace add --scope=user anthropics/claude-plugins-official \
+      && claude plugin install --scope=user code-review@claude-plugins-official \
+      && claude plugin install --scope=user code-simplifier@claude-plugins-official \
+      && claude plugin install --scope=user commit-commands@claude-plugins-official \
+      && claude plugin install --scope=user pr-review-toolkit@claude-plugins-official \
+      && claude plugin install --scope=user security-guidance@claude-plugins-official \
+      && claude plugin marketplace add --scope=user anthropics/skills
+
 ENTRYPOINT ["claude"]
 CMD ["--dangerously-skip-permissions"]
 
@@ -123,5 +131,6 @@ RUN \
 USER "${USER_NAME}"
 
 RUN \
-      claude plugin marketplace add --scope=user openai/codex-plugin-cc \
+      . ~/.zprofile \
+      && claude plugin marketplace add --scope=user openai/codex-plugin-cc \
       && claude plugin install --scope=user codex@openai-codex
