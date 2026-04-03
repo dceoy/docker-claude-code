@@ -64,6 +64,8 @@ HEALTHCHECK NONE
 
 FROM base AS cli
 
+ARG ZSH_THEME='robbyrussell'
+
 USER "${USER_NAME}"
 
 ENV PATH="/home/${USER_NAME}/.local/bin:${PATH}"
