@@ -1,6 +1,6 @@
 # docker-claude-code
 
-Dockerfile and compose.yml for Claude Code with LiteLLM proxy
+Dockerfile and Compose files for Claude Code, with an optional LiteLLM proxy
 
 ## Included tools
 
@@ -18,30 +18,47 @@ Dockerfile and compose.yml for Claude Code with LiteLLM proxy
 docker compose build
 ```
 
-### Start an interactive Claude Code session (default)
-
-`compose.yml` runs `claude --dangerously-skip-permissions` by default and
-mounts this repository at `/workspace`.
+To use the LiteLLM-enabled runtime instead, target the alternate Compose file:
 
 ```sh
-GEMINI_API_KEY=AIza... docker compose run --rm claude-code
+docker compose -f compose.claude-with-litellm.yml build
+```
+
+### Start an interactive Claude Code session (default)
+
+`compose.yml` runs `claude --dangerously-skip-permissions` directly, without
+LiteLLM, and mounts this repository at `/workspace`. You can sign in
+interactively and keep the session in the `claude-config` volume.
+
+```sh
+docker compose run --rm claude-code
 ```
 
 ### Run Claude Code with a one-shot prompt
 
 ```sh
-GEMINI_API_KEY=AIza... \
+ANTHROPIC_API_KEY=sk-ant-... \
 docker compose run --rm claude-code \
   -p "explain this project"
 ```
 
-## Runtime environment (`compose.yml`)
+## Runtime environments
 
-`compose.yml` now routes Claude Code through a local LiteLLM proxy:
+### Default runtime (`compose.yml`)
+
+- Runs only the `claude-code` container.
+- Passes through `ANTHROPIC_API_KEY` for direct API-key authentication.
+- Persists Claude Code state in `claude-config` and general app config in
+  `config-data`.
+
+### LiteLLM runtime (`compose.claude-with-litellm.yml`)
+
+`compose.claude-with-litellm.yml` routes Claude Code through a local LiteLLM
+proxy:
 
 `Claude Code -> LiteLLM (Anthropic-compatible endpoint) -> Gemini (primary) -> Cerebras (fallback) -> Groq (fallback) -> OpenRouter (fallback)`
 
-The LiteLLM proxy API is also exposed on the host as `localhost:4000`.
+The LiteLLM proxy API is exposed on the host as `localhost:4000`.
 
 | Variable                                      | Default value                                                         | Purpose                                                    |
 | --------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -89,7 +106,7 @@ ANTHROPIC_DEFAULT_HAIKU_MODEL=openrouter-haiku \
 LITELLM_OPENROUTER_OPUS_MODEL=openrouter/google/gemini-2.5-pro-preview \
 LITELLM_OPENROUTER_SONNET_MODEL=openrouter/openai/gpt-4.1 \
 LITELLM_OPENROUTER_HAIKU_MODEL=openrouter/deepseek/deepseek-chat-v3-0324 \
-docker compose run --rm claude-code \
+docker compose -f compose.claude-with-litellm.yml run --rm claude-code \
   -p "explain this project"
 ```
 
@@ -100,21 +117,14 @@ GEMINI_API_KEY=AIza... \
 ANTHROPIC_DEFAULT_OPUS_MODEL=gemini-opus \
 ANTHROPIC_DEFAULT_SONNET_MODEL=gemini-sonnet \
 ANTHROPIC_DEFAULT_HAIKU_MODEL=gemini-haiku \
-docker compose run --rm claude-code \
+docker compose -f compose.claude-with-litellm.yml run --rm claude-code \
   -p "explain this project"
 ```
 
-To bypass LiteLLM and use Anthropic directly, clear the proxy-related Anthropic
-settings at runtime and provide `ANTHROPIC_API_KEY`.
+To use Anthropic directly instead of LiteLLM, use the default `compose.yml`.
 
 ```sh
 ANTHROPIC_API_KEY=sk-ant-... \
-docker compose run --rm \
-  -e ANTHROPIC_BASE_URL= \
-  -e ANTHROPIC_AUTH_TOKEN= \
-  -e ANTHROPIC_DEFAULT_OPUS_MODEL= \
-  -e ANTHROPIC_DEFAULT_SONNET_MODEL= \
-  -e ANTHROPIC_DEFAULT_HAIKU_MODEL= \
-  claude-code \
+docker compose run --rm claude-code \
   -p "explain this project"
 ```
