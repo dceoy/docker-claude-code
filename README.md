@@ -25,7 +25,7 @@ alternate Compose file:
 
 ```sh
 docker compose -f compose.claude-with-codex.yml build
-docker compose -f compose.claude-with-litellm.yml build
+docker compose -f compose.claude-and-litellm.yml build
 ```
 
 `compose.yml` is a symlink to `compose.claude.yml`, so plain `docker compose`
@@ -98,9 +98,9 @@ docker compose run --rm claude-code \
 - Persists Claude Code state in `claude-data`, Codex state in `codex-data`,
   and general app config in `config-data`.
 
-### LiteLLM runtime (`compose.claude-with-litellm.yml`)
+### LiteLLM runtime (`compose.claude-and-litellm.yml`)
 
-`compose.claude-with-litellm.yml` routes Claude Code through a local LiteLLM
+`compose.claude-and-litellm.yml` routes Claude Code through a local LiteLLM
 proxy:
 
 `Claude Code -> LiteLLM (Anthropic-compatible endpoint) -> Gemini (primary) -> Cerebras (fallback) -> Groq (fallback) -> OpenRouter (fallback)`
@@ -169,7 +169,7 @@ ANTHROPIC_DEFAULT_HAIKU_MODEL=openrouter-haiku \
 LITELLM_OPENROUTER_OPUS_MODEL=openrouter/google/gemini-2.5-pro-preview \
 LITELLM_OPENROUTER_SONNET_MODEL=openrouter/openai/gpt-4.1 \
 LITELLM_OPENROUTER_HAIKU_MODEL=openrouter/deepseek/deepseek-chat-v3-0324 \
-docker compose -f compose.claude-with-litellm.yml run --rm claude-code \
+docker compose -f compose.claude-and-litellm.yml run --rm claude-code \
   -p "explain this project"
 ```
 
@@ -180,7 +180,7 @@ GEMINI_API_KEY=AIza... \
 ANTHROPIC_DEFAULT_OPUS_MODEL=gemini-opus \
 ANTHROPIC_DEFAULT_SONNET_MODEL=gemini-sonnet \
 ANTHROPIC_DEFAULT_HAIKU_MODEL=gemini-haiku \
-docker compose -f compose.claude-with-litellm.yml run --rm claude-code \
+docker compose -f compose.claude-and-litellm.yml run --rm claude-code \
   -p "explain this project"
 ```
 
