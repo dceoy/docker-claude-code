@@ -1,0 +1,75 @@
+---
+services:
+  litellm-proxy:
+    container_name: litellm-proxy
+    image: docker.litellm.ai/berriai/litellm:main-stable
+    environment:
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_SITE_URL: ${OPENROUTER_SITE_URL:-https://github.com/dceoy/docker-claude-code}
+      OPENROUTER_APP_NAME: ${OPENROUTER_APP_NAME:-docker-claude-code}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      LITELLM_MASTER_KEY: ${LITELLM_API_KEY:-sk-litellm}
+      LITELLM_ANTHROPIC_DISABLE_NO_PROVIDER_ERROR: 'true'
+      LITELLM_CEREBRAS_OPUS_MODEL: ${LITELLM_CEREBRAS_OPUS_MODEL:-cerebras/zai-glm-4.7}
+      LITELLM_CEREBRAS_SONNET_MODEL: ${LITELLM_CEREBRAS_SONNET_MODEL:-cerebras/qwen-3-235b-a22b-instruct-2507}
+      LITELLM_CEREBRAS_HAIKU_MODEL: ${LITELLM_CEREBRAS_HAIKU_MODEL:-cerebras/gpt-oss-120b}
+      LITELLM_GROQ_OPUS_MODEL: ${LITELLM_GROQ_OPUS_MODEL:-groq/openai/gpt-oss-120b}
+      LITELLM_GROQ_SONNET_MODEL: ${LITELLM_GROQ_SONNET_MODEL:-groq/moonshotai/kimi-k2-instruct-0905}
+      LITELLM_GROQ_HAIKU_MODEL: ${LITELLM_GROQ_HAIKU_MODEL:-groq/qwen/qwen3-32b}
+      LITELLM_OPENROUTER_OPUS_MODEL: ${LITELLM_OPENROUTER_OPUS_MODEL:-openrouter/openrouter/openrouter/free}
+      LITELLM_OPENROUTER_SONNET_MODEL: ${LITELLM_OPENROUTER_SONNET_MODEL:-openrouter/openrouter/openrouter/free}
+      LITELLM_OPENROUTER_HAIKU_MODEL: ${LITELLM_OPENROUTER_HAIKU_MODEL:-openrouter/openrouter/openrouter/free}
+      LITELLM_GEMINI_OPUS_MODEL: ${LITELLM_GEMINI_OPUS_MODEL:-gemini/gemini-3.1-pro-preview}
+      LITELLM_GEMINI_SONNET_MODEL: ${LITELLM_GEMINI_SONNET_MODEL:-gemini/gemini-3-flash-preview}
+      LITELLM_GEMINI_HAIKU_MODEL: ${LITELLM_GEMINI_HAIKU_MODEL:-gemini/gemini-2.5-flash-lite}
+    command:
+      - --config=/app/config.yml
+      - --host=0.0.0.0
+      - --port=4000
+    ports:
+      - 4000:4000
+    volumes:
+      - ./litellm.config.yml:/app/config.yml:ro
+  claude-code:
+    container_name: claude-code
+    image: dceoy/claude-code:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: claude
+      args:
+        USER_NAME: agent
+        USER_UID: '1001'
+        USER_GID: '1001'
+        ZSH_THEME: nicoulaj
+        CLAUDE_CODE_VERSION: latest
+    depends_on:
+      - litellm-proxy
+    environment:
+      ANTHROPIC_BASE_URL: http://litellm-proxy:4000
+      ANTHROPIC_AUTH_TOKEN: ${LITELLM_API_KEY:-sk-litellm}
+      ANTHROPIC_API_KEY: ''   # Important: Must be explicitly empty
+      ANTHROPIC_DEFAULT_OPUS_MODEL: ${ANTHROPIC_DEFAULT_OPUS_MODEL:-gemini-opus}
+      ANTHROPIC_DEFAULT_SONNET_MODEL: ${ANTHROPIC_DEFAULT_SONNET_MODEL:-gemini-sonnet}
+      ANTHROPIC_DEFAULT_HAIKU_MODEL: ${ANTHROPIC_DEFAULT_HAIKU_MODEL:-gemini-haiku}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+    tty: true
+    stdin_open: true
+    volumes:
+      - .:/workspace
+      - home-data:/home/agent
+    working_dir: /workspace
+    post_start:
+      - command: bash -c '[[ -d /home/agent/.claude ]] || rsync -au /opt/claude/ /home/agent/'
+        user: root
+      - command: git config --global --add safe.directory /workspace
+        user: agent
+    entrypoint:
+      - /usr/bin/zsh
+    command:
+      - -lc
+      - 'claude --dangerously-skip-permissions'
+volumes:
+  home-data:

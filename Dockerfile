@@ -35,7 +35,7 @@ RUN \
       apt-get -yqq update \
       && apt-get -yqq upgrade \
       && apt-get -yqq install --no-install-recommends --no-install-suggests \
-        gh git jq npm python3-pip ripgrep tree unzip vim wget zsh
+        gh git jq npm python3-pip ripgrep rsync tree unzip vim wget zsh
 
 # hadolint ignore=DL3013
 RUN \
@@ -56,6 +56,10 @@ RUN \
       && chmod +x /usr/local/bin/claude.ai.install.sh
 
 RUN \
+      mkdir -p /opt/claude \
+      && chown "${USER_UID}:${USER_GID}" /opt/claude
+
+RUN \
       groupadd --gid "${USER_GID}" "${USER_NAME}" \
       && useradd --uid "${USER_UID}" --gid "${USER_GID}" --shell /usr/bin/zsh --create-home "${USER_NAME}"
 
@@ -65,6 +69,7 @@ HEALTHCHECK NONE
 FROM base AS cli
 
 ARG ZSH_THEME='robbyrussell'
+ARG CLAUDE_CODE_VERSION='latest'
 
 USER "${USER_NAME}"
 
@@ -72,14 +77,13 @@ ENV PATH="/home/${USER_NAME}/.local/bin:${PATH}"
 
 RUN \
       --mount=type=cache,target=/home/${USER_NAME}/.npm \
-      /usr/local/bin/claude.ai.install.sh stable
+      /usr/local/bin/claude.ai.install.sh "${CLAUDE_CODE_VERSION}"
 
 # hadolint ignore=SC2016
 RUN \
       /usr/local/bin/install.ohmyz.sh --unattended \
       && sed -ie "s/^ZSH_THEME=.*/ZSH_THEME='${ZSH_THEME}'/g" ~/.zshrc \
       && rm -f ~/.zshrce \
-      && echo 'export PATH="${HOME}/.local/bin:${PATH}"' >> ~/.zprofile \
       && { \
         echo 'alias l="ls"'; \
         echo 'alias g="git"'; \
@@ -99,5 +103,42 @@ RUN \
       && git config --global user.name "${USER_NAME}" \
       && git config --global user.email "${USER_NAME}@localhost"
 
+RUN \
+      rsync -a "${HOME}/" /opt/claude/
+
+RUN \
+      export CLAUDE_CONFIG_DIR='/opt/claude/.claude' \
+      && claude plugin marketplace add --scope=user anthropics/claude-plugins-official \
+      && claude plugin install --scope=user code-review@claude-plugins-official \
+      && claude plugin install --scope=user code-simplifier@claude-plugins-official \
+      && claude plugin install --scope=user commit-commands@claude-plugins-official \
+      && claude plugin install --scope=user pr-review-toolkit@claude-plugins-official \
+      && claude plugin install --scope=user security-guidance@claude-plugins-official \
+      && claude plugin marketplace add --scope=user anthropics/skills
+
 ENTRYPOINT ["claude"]
 CMD ["--dangerously-skip-permissions"]
+
+
+FROM cli AS claude
+
+
+FROM cli AS claude-with-codex
+
+ARG CODEX_CLI_VERSION='latest'
+
+USER root
+
+# hadolint ignore=DL3016
+RUN \
+      --mount=type=cache,target=/root/.npm \
+      npm config set prefix /usr/local \
+      && npm upgrade -g \
+      && npm install -g "@openai/codex@${CODEX_CLI_VERSION}"
+
+USER "${USER_NAME}"
+
+RUN \
+      export CLAUDE_CONFIG_DIR='/opt/claude/.claude' \
+      && claude plugin marketplace add --scope=user openai/codex-plugin-cc \
+      && claude plugin install --scope=user codex@openai-codex

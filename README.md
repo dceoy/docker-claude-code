@@ -1,12 +1,14 @@
 # docker-claude-code
 
-Dockerfile and compose.yml for Claude Code with LiteLLM proxy
+Dockerfile and Compose files for Claude Code, with optional Codex CLI and
+LiteLLM runtimes
 
 ## Included tools
 
 - [Claude Code](https://code.claude.com/docs/en/overview) CLI
+- OpenAI Codex CLI and the [`codex-plugin-cc`](https://github.com/openai/codex-plugin-cc) Claude plugin (auto-installed in `compose.claude-with-codex.yml`)
 - [GitHub CLI (`gh`)](https://cli.github.com/)
-- `git`, `jq`, `npm`, `pipx`, `python3-pip`, `ripgrep`, `unzip`, `uv`,
+- `git`, `jq`, `npm`, `pipx`, `python3-pip`, `ripgrep`, `rsync`, `unzip`, `uv`,
   `vim`, `wget`, `zsh`
 - Helper scripts: `print-github-tags`, `oh-my-zsh`
 
@@ -18,30 +20,92 @@ Dockerfile and compose.yml for Claude Code with LiteLLM proxy
 docker compose build
 ```
 
-### Start an interactive Claude Code session (default)
-
-`compose.yml` runs `claude --dangerously-skip-permissions` by default and
-mounts this repository at `/workspace`.
+To use the Codex-enabled or LiteLLM-enabled runtime instead, target the
+alternate Compose file:
 
 ```sh
-GEMINI_API_KEY=AIza... docker compose run --rm claude-code
+docker compose -f compose.claude-with-codex.yml build
+docker compose -f compose.claude-and-litellm.yml build
 ```
+
+`compose.yml` is a symlink to `compose.claude.yml`, so plain `docker compose`
+commands keep using the default Claude Code runtime.
+
+### Start an interactive Claude Code session (default)
+
+`compose.yml` points to `compose.claude.yml`, which runs
+`claude --dangerously-skip-permissions` directly, without LiteLLM, and mounts
+this repository at `/workspace`. You can sign in interactively and keep the
+session in the `home-data` volume mounted at `/home/agent`.
+
+```sh
+docker compose run --rm claude-code
+```
+
+### Start an interactive Claude Code session with Codex installed
+
+`compose.claude-with-codex.yml` builds the `claude-with-codex` image target, so
+the container includes `claude`, `codex`, and a user-scoped installation of
+[`codex-plugin-cc`](https://github.com/openai/codex-plugin-cc) baked into the
+image while keeping the entire `/home/agent` tree in the `home-data` volume.
+
+```sh
+docker compose -f compose.claude-with-codex.yml run --rm claude-code
+```
+
+The image installs the plugin during build with:
+
+```sh
+claude plugin marketplace add --scope=user openai/codex-plugin-cc
+claude plugin install --scope=user codex@openai-codex
+```
+
+On first container start, the post-start hook copies the prebuilt home
+directory from `/opt/claude/` into an empty `home-data` volume, so the
+installed plugin persists with the rest of the Claude and Codex state. Then
+run `/codex:setup` inside Claude Code. If you prefer API-key auth over
+`codex login`, the Codex runtime also passes through `OPENAI_API_KEY`.
+
+If you are upgrading from the old split-volume layout (`claude-data`,
+`codex-data`, `config-data`), create a fresh `home-data` volume or migrate the
+contents you want to keep into `/home/agent` before starting the new runtime.
 
 ### Run Claude Code with a one-shot prompt
 
 ```sh
-GEMINI_API_KEY=AIza... \
+ANTHROPIC_API_KEY=sk-ant-... \
 docker compose run --rm claude-code \
   -p "explain this project"
 ```
 
-## Runtime environment (`compose.yml`)
+## Runtime environments
 
-`compose.yml` now routes Claude Code through a local LiteLLM proxy:
+### Default runtime (`compose.claude.yml`, via `compose.yml`)
+
+- Runs only the `claude-code` container.
+- Passes through `ANTHROPIC_API_KEY` for direct API-key authentication.
+- Persists the full `/home/agent` directory in `home-data`.
+
+### Codex-enabled runtime (`compose.claude-with-codex.yml`)
+
+- Builds the `claude-with-codex` Dockerfile target so `codex` is installed
+  alongside `claude`.
+- Adds the OpenAI marketplace with `claude plugin marketplace add --scope=user openai/codex-plugin-cc` and installs `codex@openai-codex` during image build.
+- Passes through `ANTHROPIC_API_KEY` for Claude Code and `GITHUB_TOKEN` for
+  GitHub-backed workflows, plus `OPENAI_API_KEY` for Codex API-key auth.
+- Persists the full `/home/agent` directory in `home-data`.
+
+### LiteLLM runtime (`compose.claude-and-litellm.yml`)
+
+`compose.claude-and-litellm.yml` routes Claude Code through a local LiteLLM
+proxy:
 
 `Claude Code -> LiteLLM (Anthropic-compatible endpoint) -> Gemini (primary) -> Cerebras (fallback) -> Groq (fallback) -> OpenRouter (fallback)`
 
-The LiteLLM proxy API is also exposed on the host as `localhost:4000`.
+The LiteLLM proxy API is exposed on the host as `localhost:4000`.
+
+Claude Code state and general app config are persisted together in
+`home-data`.
 
 | Variable                                      | Default value                                                         | Purpose                                                    |
 | --------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -79,6 +143,19 @@ then Groq, then OpenRouter
 > Note: for LiteLLM's Anthropic-compatible endpoint, the free route is currently
 > configured as `openrouter/openrouter/openrouter/free`.
 
+### Pin CLI versions at build time
+
+All runtimes accept `CLAUDE_CODE_VERSION`, and the Codex-enabled runtime also
+accepts `CODEX_CLI_VERSION`.
+
+```sh
+docker compose build --build-arg CLAUDE_CODE_VERSION=latest
+
+docker compose -f compose.claude-with-codex.yml build \
+  --build-arg CLAUDE_CODE_VERSION=latest \
+  --build-arg CODEX_CLI_VERSION=latest
+```
+
 ### Example: pick non-Claude OpenRouter models
 
 ```sh
@@ -89,7 +166,7 @@ ANTHROPIC_DEFAULT_HAIKU_MODEL=openrouter-haiku \
 LITELLM_OPENROUTER_OPUS_MODEL=openrouter/google/gemini-2.5-pro-preview \
 LITELLM_OPENROUTER_SONNET_MODEL=openrouter/openai/gpt-4.1 \
 LITELLM_OPENROUTER_HAIKU_MODEL=openrouter/deepseek/deepseek-chat-v3-0324 \
-docker compose run --rm claude-code \
+docker compose -f compose.claude-and-litellm.yml run --rm claude-code \
   -p "explain this project"
 ```
 
@@ -100,21 +177,15 @@ GEMINI_API_KEY=AIza... \
 ANTHROPIC_DEFAULT_OPUS_MODEL=gemini-opus \
 ANTHROPIC_DEFAULT_SONNET_MODEL=gemini-sonnet \
 ANTHROPIC_DEFAULT_HAIKU_MODEL=gemini-haiku \
-docker compose run --rm claude-code \
+docker compose -f compose.claude-and-litellm.yml run --rm claude-code \
   -p "explain this project"
 ```
 
-To bypass LiteLLM and use Anthropic directly, clear the proxy-related Anthropic
-settings at runtime and provide `ANTHROPIC_API_KEY`.
+To use Anthropic directly instead of LiteLLM, use the default `compose.yml`
+symlink, which points to `compose.claude.yml`.
 
 ```sh
 ANTHROPIC_API_KEY=sk-ant-... \
-docker compose run --rm \
-  -e ANTHROPIC_BASE_URL= \
-  -e ANTHROPIC_AUTH_TOKEN= \
-  -e ANTHROPIC_DEFAULT_OPUS_MODEL= \
-  -e ANTHROPIC_DEFAULT_SONNET_MODEL= \
-  -e ANTHROPIC_DEFAULT_HAIKU_MODEL= \
-  claude-code \
+docker compose run --rm claude-code \
   -p "explain this project"
 ```

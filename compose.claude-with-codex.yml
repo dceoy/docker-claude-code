@@ -1,0 +1,38 @@
+---
+services:
+  claude-code:
+    container_name: claude-code
+    image: dceoy/claude-code:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: claude-with-codex
+      args:
+        USER_NAME: agent
+        USER_UID: '1001'
+        USER_GID: '1001'
+        ZSH_THEME: nicoulaj
+        CLAUDE_CODE_VERSION: latest
+        CODEX_CLI_VERSION: latest
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    tty: true
+    stdin_open: true
+    volumes:
+      - .:/workspace
+      - home-data:/home/agent
+    working_dir: /workspace
+    post_start:
+      - command: bash -c '[[ -d /home/agent/.claude ]] || rsync -au /opt/claude/ /home/agent/'
+        user: root
+      - command: git config --global --add safe.directory /workspace
+        user: agent
+    entrypoint:
+      - /usr/bin/zsh
+    command:
+      - -lc
+      - 'claude --dangerously-skip-permissions'
+volumes:
+  home-data:
