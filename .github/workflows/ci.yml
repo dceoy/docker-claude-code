@@ -38,6 +38,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      id-token: write
     uses: dceoy/gh-actions-for-devops/.github/workflows/docker-build-and-push.yml@main  # zizmor: ignore[unpinned-uses]
     with:
       registry: docker.io

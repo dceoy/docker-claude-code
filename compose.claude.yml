@@ -27,6 +27,7 @@ services:
         user: root
       - command: git config --global --add safe.directory /workspace
         user: agent
+    user: agent
     entrypoint:
       - /usr/bin/zsh
     command:
