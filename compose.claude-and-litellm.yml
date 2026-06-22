@@ -45,6 +45,10 @@ services:
         USER_GID: '1001'
         ZSH_THEME: nicoulaj
         CLAUDE_CODE_VERSION: latest
+      cache_from:
+        - type=gha
+      cache_to:
+        - type=gha,mode=max
     depends_on:
       - litellm-proxy
     environment:

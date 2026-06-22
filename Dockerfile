@@ -134,14 +134,15 @@ ARG CODEX_CLI_VERSION='latest'
 
 USER root
 
-# hadolint ignore=DL3016
 RUN \
-      --mount=type=cache,target=/root/.npm \
-      npm config set prefix /usr/local \
-      && npm upgrade -g \
-      && npm install -g "@openai/codex@${CODEX_CLI_VERSION}"
+      curl -fsSL -o /usr/local/bin/codex.install.sh https://chatgpt.com/codex/install.sh \
+      && chmod +x /usr/local/bin/codex.install.sh
 
 USER "${USER_NAME}"
+
+RUN \
+      --mount=type=cache,target=/home/${USER_NAME}/.npm \
+      /usr/local/bin/codex.install.sh --release "${CODEX_CLI_VERSION}"
 
 RUN \
       export CLAUDE_CONFIG_DIR='/opt/claude/.claude' \
