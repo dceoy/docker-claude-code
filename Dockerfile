@@ -42,6 +42,11 @@ RUN \
       --mount=type=cache,target=/root/.cache/pip \
       python3 -m pip install --no-cache-dir --prefix=/usr/local pipx uv
 
+# hadolint ignore=DL3016
+RUN \
+      --mount=type=cache,target=/root/.cache/npm \
+      npm install -g pnpm
+
 RUN \
       curl -fsSL -o /usr/local/bin/print-github-tags \
         https://raw.githubusercontent.com/dceoy/print-github-tags/master/print-github-tags \
