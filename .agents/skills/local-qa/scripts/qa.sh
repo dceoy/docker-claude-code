@@ -4,6 +4,11 @@ set -euox pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
+COOLDOWN_DAYS=7
+export UV_EXCLUDE_NEWER="${COOLDOWN_DAYS} days"
+export NPM_CONFIG_MIN_RELEASE_AGE="${COOLDOWN_DAYS}"
+export PNPM_CONFIG_MINIMUM_RELEASE_AGE=$((COOLDOWN_DAYS * 24 * 60))
+
 git ls-files -z -- '*.sh' '*.bash' '*.bats' | xargs -0 -t shellcheck
 npx -y prettier --write './**/*.md'
 zizmor --fix=safe .github/workflows
