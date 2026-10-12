@@ -15,8 +15,9 @@ Run the local QA script `scripts/qa.sh` in this skill.
 - If the script fails due to missing tooling, install the missing tool(s) and rerun the script once.
 - Prefer the platform package manager for missing tools used by this repo:
   - macOS (Homebrew): `brew install shellcheck actionlint yamllint checkov zizmor`
-  - macOS `npx` fallback: `brew install node`
+  - macOS `pnpm`: `brew install pnpm`
   - Linux (Debian/Ubuntu) base packages: `sudo apt-get update && sudo apt-get install -y shellcheck yamllint nodejs npm pipx golang rustc cargo`
+  - Linux `pnpm`: `npm install --global pnpm` (requires a supported Node.js version)
   - Linux `checkov`: `pipx install checkov`
   - Linux `actionlint`: `go install github.com/rhysd/actionlint/cmd/actionlint@latest`
   - Linux `zizmor`: `cargo install zizmor`
