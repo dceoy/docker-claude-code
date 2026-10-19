@@ -30,6 +30,9 @@ jobs:
     permissions:
       contents: write
     uses: dceoy/gha-for-devops/.github/workflows/docker-lint-and-scan.yml@main   # zizmor: ignore[unpinned-uses]
+    with:
+      submit-dependencies: true
+      snapshot-correlator: source
   docker-build-and-push:
     if: >
       github.event_name == 'workflow_dispatch'
@@ -48,6 +51,7 @@ jobs:
       file: ./Dockerfile
       platforms: linux/amd64,linux/arm64
       push: true
+      submit-dependencies: true
       scan-before-build: false
       scan-after-build: true
     secrets:
