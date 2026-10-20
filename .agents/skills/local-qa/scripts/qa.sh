@@ -10,7 +10,7 @@ export NPM_CONFIG_MIN_RELEASE_AGE="${COOLDOWN_DAYS}"
 export PNPM_CONFIG_MINIMUM_RELEASE_AGE=$((COOLDOWN_DAYS * 24 * 60))
 
 git ls-files -z -- '*.sh' '*.bash' '*.bats' | xargs -0 -t shellcheck
-pnpm dlx prettier --write './**/*.md'
+pnpm dlx oxfmt --write './**/*.md'
 uvx zizmor --fix=safe .github/workflows
 git ls-files -z -- '.github/workflows/*.yml' '.github/workflows/*.yaml' | xargs -0 -t actionlint
 git ls-files -z -- '.github/workflows/*.yml' '.github/workflows/*.yaml' | xargs -0 -t uvx yamllint -d '{"extends": "relaxed", "rules": {"line-length": "disable"}}'
