@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: daily
     cooldown:
-      default-days: 7
+      default-days: 1
     open-pull-requests-limit: 10
     groups:
       github-actions-dependencies:
@@ -21,12 +21,14 @@ updates:
       docker-dependencies:
         patterns:
           - '*'
+    cooldown:
+      default-days: 1
   - package-ecosystem: docker-compose
     directory: /
     schedule:
       interval: daily
     cooldown:
-      default-days: 7
+      default-days: 1
     open-pull-requests-limit: 10
     groups:
       docker-compose-dependencies:
