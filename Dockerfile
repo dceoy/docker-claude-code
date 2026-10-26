@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-ARG UBUNTU_VERSION=26.04
-FROM public.ecr.aws/docker/library/ubuntu:${UBUNTU_VERSION} AS base
+ARG DEBIAN_TAG=trixie-dev
+FROM dhi.io/debian-base:${DEBIAN_TAG} AS base
 
 ARG USER_NAME=agent
 ARG USER_UID=1001
@@ -35,7 +35,7 @@ RUN \
       apt-get -yqq update \
       && apt-get -yqq upgrade \
       && apt-get -yqq install --no-install-recommends --no-install-suggests \
-        gh git jq npm python3-pip ripgrep rsync tree unzip vim wget zsh
+        gh git jq npm passwd python3-pip ripgrep rsync tree unzip vim wget zsh
 
 # hadolint ignore=DL3013
 RUN \
