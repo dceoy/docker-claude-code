@@ -1,5 +1,9 @@
 # docker-claude-code
 
+To build locally from the free Docker Hardened Debian 13 image, authenticate
+with Docker Hub credentials using `docker login dhi.io`. The GitHub Actions
+Docker Hub token must also have access to `dhi.io`.
+
 Dockerfile and Compose files for Claude Code, with optional Codex CLI and
 LiteLLM runtimes
 
