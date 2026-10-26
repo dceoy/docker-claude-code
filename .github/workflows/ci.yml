@@ -45,6 +45,7 @@ jobs:
     uses: dceoy/gha-for-devops/.github/workflows/docker-build-and-push.yml@main  # zizmor: ignore[unpinned-uses]
     with:
       registry: docker.io
+      login-dhi: true
       registry-user: ${{ github.repository_owner }}
       image-name: ${{ github.repository_owner }}/claude-code
       context: .
